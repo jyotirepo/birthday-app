@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>BirthdayHQ — Employee Birthdays</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #13131a;
+    --surface2: #1c1c28;
+    --border: #2a2a3d;
+    --accent: #f7c844;
+    --accent2: #ff6b6b;
+    --accent3: #6bc5f8;
+    --text: #f0f0f8;
+    --muted: #888899;
+    --radius: 12px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; }
+
+  /* NAV */
+  nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 40px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(10,10,15,0.95);
+    backdrop-filter: blur(10px);
+    position: sticky; top: 0; z-index: 100;
+  }
+  .logo { font-family: 'Playfair Display', serif; font-size: 22px; color: var(--accent); letter-spacing: -0.5px; }
+  .logo span { color: var(--text); }
+  nav .tabs { display: flex; gap: 4px; }
+  nav .tab {
+    padding: 8px 20px; border-radius: 8px; cursor: pointer;
+    font-size: 14px; font-weight: 500; color: var(--muted);
+    border: 1px solid transparent; transition: all 0.2s;
+  }
+  nav .tab:hover { color: var(--text); background: var(--surface2); }
+  nav .tab.active { color: var(--accent); border-color: var(--accent); background: rgba(247,200,68,0.08); }
+
+  /* LAYOUT */
+  main { max-width: 1200px; margin: 0 auto; padding: 40px 24px; }
+
+  /* HERO */
+  .hero { text-align: center; margin-bottom: 48px; }
+  .hero h1 { font-family: 'Playfair Display', serif; font-size: clamp(36px, 6vw, 64px); font-weight: 900; line-height: 1.05; }
+  .hero h1 em { color: var(--accent); font-style: normal; }
+  .hero p { color: var(--muted); margin-top: 12px; font-size: 16px; }
+
+  /* UPCOMING BANNER */
+  .upcoming-banner {
+    background: linear-gradient(135deg, rgba(247,200,68,0.12), rgba(107,197,248,0.08));
+    border: 1px solid rgba(247,200,68,0.25);
+    border-radius: 16px; padding: 24px 28px; margin-bottom: 40px;
+  }
+  .upcoming-banner h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 2px; color: var(--accent); margin-bottom: 14px; }
+  .birthday-chips { display: flex; flex-wrap: wrap; gap: 10px; }
+  .chip {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 50px; padding: 8px 16px 8px 10px;
+    font-size: 13px; transition: transform 0.2s;
+  }
+  .chip:hover { transform: translateY(-2px); }
+  .chip .avatar {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--accent); color: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 11px;
+  }
+  .chip .days { color: var(--accent); font-weight: 600; }
+  .chip.today .avatar { background: var(--accent2); animation: pulse 1.5s infinite; }
+  @keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(255,107,107,0.4)} 50%{box-shadow:0 0 0 8px rgba(255,107,107,0)} }
+
+  /* STATS ROW */
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px; margin-bottom: 40px; }
+  .stat-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px;
+    text-align: center;
+  }
+  .stat-card .num { font-family: 'Playfair Display', serif; font-size: 36px; font-weight: 700; }
+  .stat-card .label { color: var(--muted); font-size: 12px; margin-top: 4px; }
+  .stat-card.accent .num { color: var(--accent); }
+  .stat-card.accent2 .num { color: var(--accent2); }
+  .stat-card.accent3 .num { color: var(--accent3); }
+
+  /* EMPLOYEE TABLE */
+  .toolbar {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 20px; flex-wrap: wrap;
+  }
+  .search-wrap { flex: 1; min-width: 200px; position: relative; }
+  .search-wrap input {
+    width: 100%; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px 16px 10px 40px;
+    color: var(--text); font-family: inherit; font-size: 14px; outline: none;
+    transition: border-color 0.2s;
+  }
+  .search-wrap input:focus { border-color: var(--accent); }
+  .search-wrap .icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); }
+  .filter-select {
+    background: var(--surface); border: 1px solid var(--border); color: var(--text);
+    border-radius: 8px; padding: 10px 14px; font-family: inherit; font-size: 14px; outline: none; cursor: pointer;
+  }
+  .btn {
+    padding: 10px 22px; border-radius: 8px; cursor: pointer;
+    font-family: inherit; font-size: 14px; font-weight: 500; border: none; transition: all 0.2s;
+  }
+  .btn-primary { background: var(--accent); color: var(--bg); }
+  .btn-primary:hover { background: #e8b930; transform: translateY(-1px); }
+  .btn-danger { background: rgba(255,107,107,0.15); color: var(--accent2); border: 1px solid rgba(255,107,107,0.3); }
+  .btn-danger:hover { background: rgba(255,107,107,0.25); }
+  .btn-ghost { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+  .btn-ghost:hover { border-color: var(--accent3); color: var(--accent3); }
+
+  table { width: 100%; border-collapse: collapse; }
+  .table-wrap {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; overflow: hidden;
+  }
+  thead tr { background: var(--surface2); }
+  th { padding: 14px 18px; text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); font-weight: 500; }
+  td { padding: 14px 18px; border-top: 1px solid var(--border); font-size: 14px; vertical-align: middle; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+  .emp-name { font-weight: 500; }
+  .emp-dept {
+    display: inline-block; padding: 3px 10px; border-radius: 20px;
+    font-size: 12px; background: var(--surface2); color: var(--accent3);
+    border: 1px solid rgba(107,197,248,0.2);
+  }
+  .dob-cell { color: var(--text); }
+  .dob-cell .bday { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .age-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px; border-radius: 50%;
+    background: rgba(247,200,68,0.1); color: var(--accent);
+    font-weight: 600; font-size: 13px; border: 1px solid rgba(247,200,68,0.2);
+  }
+  .actions { display: flex; gap: 8px; }
+  .action-btn {
+    padding: 6px 12px; border-radius: 6px; font-size: 12px; cursor: pointer;
+    border: none; font-family: inherit; font-weight: 500; transition: all 0.15s;
+  }
+  .edit-btn { background: rgba(107,197,248,0.1); color: var(--accent3); border: 1px solid rgba(107,197,248,0.2); }
+  .edit-btn:hover { background: rgba(107,197,248,0.2); }
+  .del-btn { background: rgba(255,107,107,0.1); color: var(--accent2); border: 1px solid rgba(255,107,107,0.2); }
+  .del-btn:hover { background: rgba(255,107,107,0.2); }
+  .empty-state { text-align: center; padding: 60px 20px; color: var(--muted); }
+  .empty-state .big { font-size: 48px; margin-bottom: 12px; }
+
+  /* MODAL */
+  .overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.75);
+    backdrop-filter: blur(4px); z-index: 200;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity 0.2s;
+  }
+  .overlay.open { opacity: 1; pointer-events: all; }
+  .modal {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 20px; padding: 36px; width: 520px; max-width: 95vw;
+    transform: translateY(20px); transition: transform 0.2s;
+    max-height: 90vh; overflow-y: auto;
+  }
+  .overlay.open .modal { transform: translateY(0); }
+  .modal h2 { font-family: 'Playfair Display', serif; font-size: 26px; margin-bottom: 24px; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group.full { grid-column: 1 / -1; }
+  label { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
+  input[type=text], input[type=email], input[type=date], input[type=tel] {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px 14px;
+    color: var(--text); font-family: inherit; font-size: 14px; outline: none;
+    transition: border-color 0.2s; width: 100%;
+  }
+  input:focus { border-color: var(--accent); }
+  input[type=date]::-webkit-calendar-picker-indicator { filter: invert(0.5); }
+  .modal-actions { display: flex; gap: 12px; margin-top: 24px; justify-content: flex-end; }
+
+  /* DETAIL PANEL */
+  .detail-panel .modal { width: 460px; }
+  .detail-avatar {
+    width: 64px; height: 64px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), #e8630a);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 700;
+    color: var(--bg); margin-bottom: 16px;
+  }
+  .detail-name { font-family: 'Playfair Display', serif; font-size: 28px; margin-bottom: 4px; }
+  .detail-pos { color: var(--muted); margin-bottom: 20px; }
+  .detail-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .detail-row:last-child { border-bottom: none; }
+  .detail-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .detail-val { font-weight: 500; }
+  .bday-highlight {
+    background: linear-gradient(135deg, rgba(247,200,68,0.1), rgba(255,107,107,0.08));
+    border: 1px solid rgba(247,200,68,0.2);
+    border-radius: 10px; padding: 14px 16px; margin-top: 16px; text-align: center;
+  }
+  .bday-highlight .bday-date { font-family: 'Playfair Display', serif; font-size: 22px; color: var(--accent); }
+  .bday-highlight .bday-sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+  /* TOAST */
+  .toast {
+    position: fixed; bottom: 30px; right: 30px; z-index: 300;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px 20px;
+    font-size: 14px; font-weight: 500;
+    transform: translateY(80px); opacity: 0; transition: all 0.3s;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { border-color: rgba(107,197,248,0.4); color: var(--accent3); }
+  .toast.error { border-color: rgba(255,107,107,0.4); color: var(--accent2); }
+
+  /* Month selector */
+  .month-filter { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 24px; }
+  .month-btn {
+    padding: 5px 12px; border-radius: 20px; font-size: 12px; cursor: pointer;
+    background: var(--surface2); border: 1px solid var(--border); color: var(--muted);
+    font-family: inherit; transition: all 0.15s;
+  }
+  .month-btn:hover { color: var(--text); border-color: var(--muted); }
+  .month-btn.active { background: rgba(247,200,68,0.12); border-color: var(--accent); color: var(--accent); }
+
+  @media (max-width: 600px) {
+    nav { padding: 14px 16px; }
+    main { padding: 24px 16px; }
+    .form-grid { grid-template-columns: 1fr; }
+    .form-group.full { grid-column: 1; }
+    th:nth-child(4), td:nth-child(4),
+    th:nth-child(5), td:nth-child(5) { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">Birthday<span>HQ</span></div>
+  <div class="tabs">
+    <div class="tab active" onclick="setTab('dashboard')">Dashboard</div>
+    <div class="tab" onclick="setTab('employees')">Employees</div>
+  </div>
+  <button class="btn btn-primary" onclick="openAddModal()">+ Add Employee</button>
+</nav>
+
+<main>
+  <!-- DASHBOARD TAB -->
+  <div id="tab-dashboard">
+    <div class="hero">
+      <h1>Employee <em>Birthday</em><br>Management</h1>
+      <p>Keep track of every celebration — never miss a birthday again.</p>
+    </div>
+
+    <div class="upcoming-banner">
+      <h3>🎂 Upcoming in Next 30 Days</h3>
+      <div class="birthday-chips" id="upcoming-chips">
+        <span style="color:var(--muted);font-size:13px">Loading...</span>
+      </div>
+    </div>
+
+    <div class="stats" id="stats-row"></div>
+
+    <h3 style="font-family:'Playfair Display',serif;font-size:20px;margin-bottom:16px">This Month's Birthdays</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>Name</th><th>Dept</th><th>Birthday</th><th>Age</th>
+        </tr></thead>
+        <tbody id="month-table-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- EMPLOYEES TAB -->
+  <div id="tab-employees" style="display:none">
+    <div class="toolbar">
+      <div class="search-wrap">
+        <span class="icon">🔍</span>
+        <input type="text" id="search-input" placeholder="Search by name, department..." oninput="renderTable()" />
+      </div>
+      <select class="filter-select" id="dept-filter" onchange="renderTable()">
+        <option value="">All Departments</option>
+      </select>
+    </div>
+
+    <div class="month-filter" id="month-filter"></div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>Name</th><th>Department</th><th>Position</th><th>Date of Birth</th><th>Age</th><th>Actions</th>
+        </tr></thead>
+        <tbody id="emp-table-body"></tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<!-- ADD/EDIT MODAL -->
+<div class="overlay" id="form-overlay">
+  <div class="modal">
+    <h2 id="modal-title">Add Employee</h2>
+    <div class="form-grid">
+      <div class="form-group full">
+        <label>Full Name *</label>
+        <input type="text" id="f-name" placeholder="John Smith" />
+      </div>
+      <div class="form-group">
+        <label>Department</label>
+        <input type="text" id="f-dept" placeholder="Engineering" />
+      </div>
+      <div class="form-group">
+        <label>Position</label>
+        <input type="text" id="f-pos" placeholder="Software Engineer" />
+      </div>
+      <div class="form-group">
+        <label>Date of Birth *</label>
+        <input type="date" id="f-dob" />
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="f-email" placeholder="john@company.com" />
+      </div>
+      <div class="form-group full">
+        <label>Phone</label>
+        <input type="tel" id="f-phone" placeholder="+1 555 000 0000" />
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('form-overlay')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEmployee()">Save Employee</button>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="overlay detail-panel" id="detail-overlay">
+  <div class="modal" id="detail-content"></div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+const API = window.BACKEND_URL || '/api';
+let employees = [];
+let editId = null;
+let activeMonth = null;
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const MONTHS_FULL = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+async function fetchEmployees() {
+  try {
+    const r = await fetch(`${API}/employees`);
+    employees = await r.json();
+    renderAll();
+  } catch(e) {
+    showToast('Could not connect to backend', 'error');
+  }
+}
+
+async function fetchUpcoming() {
+  try {
+    const r = await fetch(`${API}/birthdays/upcoming`);
+    const data = await r.json();
+    const el = document.getElementById('upcoming-chips');
+    if (!data.length) { el.innerHTML = '<span style="color:var(--muted);font-size:13px">No birthdays in the next 30 days</span>'; return; }
+    el.innerHTML = data.map(e => {
+      const days = parseInt(e.days_until);
+      const isToday = days === 0;
+      const initials = e.name.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
+      return `<div class="chip ${isToday?'today':''}" onclick="showDetail(${e.id})">
+        <div class="avatar">${initials}</div>
+        <div>
+          <div>${e.name}</div>
+          <div class="days">${isToday ? '🎉 Today!' : `in ${days}d`}</div>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) {}
+}
+
+function renderAll() {
+  renderStats();
+  renderMonthTable();
+  renderTable();
+  renderMonthFilter();
+  renderDeptFilter();
+}
+
+function renderStats() {
+  const now = new Date();
+  const thisMonth = now.getMonth() + 1;
+  const thisMonthEmps = employees.filter(e => new Date(e.dob).getMonth()+1 === thisMonth);
+  const depts = new Set(employees.map(e=>e.department).filter(Boolean)).size;
+  document.getElementById('stats-row').innerHTML = `
+    <div class="stat-card accent"><div class="num">${employees.length}</div><div class="label">Total Employees</div></div>
+    <div class="stat-card accent2"><div class="num">${thisMonthEmps.length}</div><div class="label">Birthdays This Month</div></div>
+    <div class="stat-card accent3"><div class="num">${depts}</div><div class="label">Departments</div></div>
+  `;
+}
+
+function renderMonthTable() {
+  const now = new Date();
+  const thisMonth = now.getMonth() + 1;
+  const emps = employees.filter(e => new Date(e.dob).getMonth()+1 === thisMonth)
+    .sort((a,b) => new Date(a.dob).getDate() - new Date(b.dob).getDate());
+  const tbody = document.getElementById('month-table-body');
+  if (!emps.length) {
+    tbody.innerHTML = `<tr><td colspan="4"><div class="empty-state"><div class="big">🎈</div>No birthdays this month</div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = emps.map(e => {
+    const dob = new Date(e.dob);
+    const day = dob.getUTCDate();
+    const age = parseInt(e.age);
+    return `<tr onclick="showDetail(${e.id})" style="cursor:pointer">
+      <td class="emp-name">${e.name}</td>
+      <td><span class="emp-dept">${e.department||'—'}</span></td>
+      <td class="dob-cell">
+        <div>${dob.toLocaleDateString('en-US',{month:'long',day:'numeric',timeZone:'UTC'})}</div>
+        <div class="bday">🎂 ${getOrdinal(day)} of the month</div>
+      </td>
+      <td><span class="age-badge">${age}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+function renderMonthFilter() {
+  const el = document.getElementById('month-filter');
+  el.innerHTML = `<button class="month-btn ${activeMonth===null?'active':''}" onclick="filterMonth(null)">All</button>` +
+    MONTHS.map((m,i) => {
+      const count = employees.filter(e=>new Date(e.dob).getMonth()===i).length;
+      return `<button class="month-btn ${activeMonth===i?'active':''}" onclick="filterMonth(${i})">${m} <span style="opacity:0.5">(${count})</span></button>`;
+    }).join('');
+}
+
+function filterMonth(m) {
+  activeMonth = m;
+  renderMonthFilter();
+  renderTable();
+}
+
+function renderDeptFilter() {
+  const depts = [...new Set(employees.map(e=>e.department).filter(Boolean))].sort();
+  const sel = document.getElementById('dept-filter');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">All Departments</option>' + depts.map(d=>`<option value="${d}">${d}</option>`).join('');
+  sel.value = cur;
+}
+
+function renderTable() {
+  const q = (document.getElementById('search-input')?.value||'').toLowerCase();
+  const dept = document.getElementById('dept-filter')?.value||'';
+  let filtered = employees;
+  if (q) filtered = filtered.filter(e => e.name.toLowerCase().includes(q) || (e.department||'').toLowerCase().includes(q) || (e.position||'').toLowerCase().includes(q));
+  if (dept) filtered = filtered.filter(e => e.department === dept);
+  if (activeMonth !== null) filtered = filtered.filter(e => new Date(e.dob).getMonth() === activeMonth);
+
+  const tbody = document.getElementById('emp-table-body');
+  if (!filtered.length) {
+    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><div class="big">👥</div>No employees found</div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = filtered.map(e => {
+    const dob = new Date(e.dob);
+    const age = parseInt(e.age);
+    return `<tr>
+      <td class="emp-name" onclick="showDetail(${e.id})" style="cursor:pointer">${e.name}</td>
+      <td><span class="emp-dept">${e.department||'—'}</span></td>
+      <td>${e.position||'—'}</td>
+      <td class="dob-cell">
+        <div>${dob.toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric',timeZone:'UTC'})}</div>
+        <div class="bday">${dob.toLocaleDateString('en-US',{month:'long',day:'numeric',timeZone:'UTC'})}</div>
+      </td>
+      <td><span class="age-badge">${age}</span></td>
+      <td><div class="actions">
+        <button class="action-btn edit-btn" onclick="openEditModal(${e.id})">Edit</button>
+        <button class="action-btn del-btn" onclick="deleteEmployee(${e.id})">Delete</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+function showDetail(id) {
+  const e = employees.find(x=>x.id===id);
+  if (!e) return;
+  const dob = new Date(e.dob);
+  const initials = e.name.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
+  const age = parseInt(e.age);
+  const bday = dob.toLocaleDateString('en-US',{month:'long',day:'numeric',timeZone:'UTC'});
+  document.getElementById('detail-content').innerHTML = `
+    <div class="detail-avatar">${initials}</div>
+    <div class="detail-name">${e.name}</div>
+    <div class="detail-pos">${e.position||''} ${e.department?'· '+e.department:''}</div>
+    <div class="detail-row"><span class="detail-label">Email</span><span class="detail-val">${e.email||'—'}</span></div>
+    <div class="detail-row"><span class="detail-label">Phone</span><span class="detail-val">${e.phone||'—'}</span></div>
+    <div class="detail-row"><span class="detail-label">Date of Birth</span><span class="detail-val">${dob.toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric',timeZone:'UTC'})}</span></div>
+    <div class="detail-row"><span class="detail-label">Age</span><span class="detail-val">${age} years old</span></div>
+    <div class="bday-highlight">
+      <div>🎂 Birthday</div>
+      <div class="bday-date">${bday}</div>
+      <div class="bday-sub">Turning ${age+1} this year</div>
+    </div>
+    <div class="modal-actions" style="margin-top:20px">
+      <button class="btn btn-ghost" onclick="closeModal('detail-overlay')">Close</button>
+      <button class="btn btn-ghost" onclick="closeModal('detail-overlay');openEditModal(${e.id})">Edit</button>
+    </div>
+  `;
+  document.getElementById('detail-overlay').classList.add('open');
+}
+
+function openAddModal() {
+  editId = null;
+  document.getElementById('modal-title').textContent = 'Add Employee';
+  ['name','dept','pos','dob','email','phone'].forEach(f => document.getElementById('f-'+f).value = '');
+  document.getElementById('form-overlay').classList.add('open');
+}
+
+function openEditModal(id) {
+  const e = employees.find(x=>x.id===id);
+  if (!e) return;
+  editId = id;
+  document.getElementById('modal-title').textContent = 'Edit Employee';
+  document.getElementById('f-name').value = e.name;
+  document.getElementById('f-dept').value = e.department||'';
+  document.getElementById('f-pos').value = e.position||'';
+  document.getElementById('f-dob').value = e.dob?.slice(0,10)||'';
+  document.getElementById('f-email').value = e.email||'';
+  document.getElementById('f-phone').value = e.phone||'';
+  document.getElementById('form-overlay').classList.add('open');
+}
+
+async function saveEmployee() {
+  const name = document.getElementById('f-name').value.trim();
+  const dob = document.getElementById('f-dob').value;
+  if (!name || !dob) { showToast('Name and Date of Birth are required', 'error'); return; }
+  const payload = {
+    name, dob,
+    department: document.getElementById('f-dept').value.trim(),
+    position: document.getElementById('f-pos').value.trim(),
+    email: document.getElementById('f-email').value.trim(),
+    phone: document.getElementById('f-phone').value.trim(),
+  };
+  try {
+    const url = editId ? `${API}/employees/${editId}` : `${API}/employees`;
+    const method = editId ? 'PUT' : 'POST';
+    const r = await fetch(url, { method, headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+    if (!r.ok) throw new Error();
+    closeModal('form-overlay');
+    showToast(editId ? 'Employee updated!' : 'Employee added!', 'success');
+    await fetchEmployees();
+    await fetchUpcoming();
+  } catch(e) {
+    showToast('Error saving employee', 'error');
+  }
+}
+
+async function deleteEmployee(id) {
+  if (!confirm('Delete this employee?')) return;
+  try {
+    await fetch(`${API}/employees/${id}`, { method: 'DELETE' });
+    showToast('Employee deleted', 'success');
+    await fetchEmployees();
+    await fetchUpcoming();
+  } catch(e) {
+    showToast('Error deleting', 'error');
+  }
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+function setTab(tab) {
+  document.getElementById('tab-dashboard').style.display = tab==='dashboard'?'block':'none';
+  document.getElementById('tab-employees').style.display = tab==='employees'?'block':'none';
+  document.querySelectorAll('.tab').forEach((el,i) => {
+    el.classList.toggle('active', (i===0&&tab==='dashboard')||(i===1&&tab==='employees'));
+  });
+}
+
+function showToast(msg, type='success') {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.className = `toast ${type} show`;
+  setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+function getOrdinal(n) {
+  const s = ['th','st','nd','rd'];
+  const v = n%100;
+  return n + (s[(v-20)%10]||s[v]||s[0]);
+}
+
+// Close overlay on outside click
+document.querySelectorAll('.overlay').forEach(el => {
+  el.addEventListener('click', e => { if(e.target===el) el.classList.remove('open'); });
+});
+
+// Keyboard shortcut
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') document.querySelectorAll('.overlay.open').forEach(el=>el.classList.remove('open'));
+});
+
+fetchEmployees();
+fetchUpcoming();
+</script>
+</body>
+</html>
