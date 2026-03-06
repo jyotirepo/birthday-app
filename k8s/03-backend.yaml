@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: backend
-          image: birthday-backend:latest
+          image: jsethy2010/birthday-app-backend:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 3001
