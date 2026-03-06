@@ -16,7 +16,7 @@ spec:
       containers:
         - name: frontend
           image: jsethy2010/birthday-app-frontend:latest
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           ports:
             - containerPort: 80
           readinessProbe:
