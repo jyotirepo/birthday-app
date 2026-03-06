@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: birthday-frontend:latest
+          image: jsethy2010/birthday-app-frontend:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 80
