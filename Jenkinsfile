@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    tools {
+        nodejs 'node18'
+    }
+
     environment {
         BACKEND_IMAGE  = "jsethy2010/birthday-app-backend"
         FRONTEND_IMAGE = "jsethy2010/birthday-app-frontend"
